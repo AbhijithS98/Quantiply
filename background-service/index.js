@@ -37,6 +37,9 @@ app.post('/ask', async (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.send('background-service server is up.');
+});
 
 app.listen(PORT, () => {
   console.log(`Background service running at http://localhost:${PORT}`);

@@ -1,35 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
+import './App.css';
+const EXPRESS_APP_URL = import.meta.env.EXPRESS_APP_URL;
+
+const socket = io(EXPRESS_APP_URL); // Express WebSocket URL
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [question, setQuestion] = useState('');
+  const [messages, setMessages] = useState([]);
+
+  const sendQuestion = () => {
+    if (!question.trim()) return;
+    setMessages((prev) => [...prev, { type: 'user', content: question }]);
+    socket.emit('question', question);
+    setQuestion('');
+  };
+
+  useEffect(() => {
+    socket.on('answer', (answer) => {
+      setMessages((prev) => [...prev, { type: 'bot', content: answer }]);
+    });
+
+    return () => socket.off('answer');
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="container">
+    <h2 className="heading">Question Bot</h2>
+
+    <div className="chat-box">
+      {messages.map((msg, index) => (
+        <div key={index} className={msg.type === 'user' ? 'user-msg' : 'bot-msg'}>
+          {msg.type === 'bot' && msg.content.startsWith('http') ? (
+            <img src={msg.content} alt="Bot Response" className="image" />
+          ) : (
+            <span><strong>{msg.type === 'user' ? 'You' : 'Bot'}:</strong> {msg.content}</span>
+          )}
+        </div>
+      ))}
+    </div>
+
+    <div className="input-container">
+      <input
+        type="text"
+        value={question}
+        onChange={(e) => setQuestion(e.target.value)}
+        placeholder="Ask something..."
+        className="input"
+      />
+      <button onClick={sendQuestion} className="button">Send</button>
+    </div>
+  </div>
+  );
 }
 
-export default App
+export default App;

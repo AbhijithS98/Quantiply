@@ -1,0 +1,16 @@
+{
+  "name": "quantiply",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "concurrently \"npm run start --prefix background-service\" \"npm run start --prefix express-app\" \"npm run dev --prefix ui-app\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
