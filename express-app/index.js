@@ -21,6 +21,22 @@ app.get('/', (req, res) => {
   res.send('Socket server is up.');
 });
 
+io.on('connection', (socket) => {
+  console.log('Client connected');
+
+  socket.on('question', async (question) => {
+    try {
+      const response = await axios.post(BACKGROUND_SERVICE_URL, { question });
+      socket.emit('answer', response.data.answer);
+    } catch (err) {
+      socket.emit('answer', 'Error communicating with background service');
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
 
 server.listen(PORT, () => {
   console.log(`Express app listening on http://localhost:${PORT}`);
