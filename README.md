@@ -5,7 +5,7 @@ This is a 3-part real-time chat application where a user can ask simple question
 ## Project Structure
 
 ```bash
-question-bot/
+QUANTIPLY/
 │
 ├── background-service/     # Background service for processing questions
 │   └── index.js
