@@ -26,7 +26,7 @@ io.on('connection', (socket) => {
 
   socket.on('question', async (question) => {
     try {
-      const response = await axios.post(BACKGROUND_SERVICE_URL, { question });
+      const response = await axios.post(`${BACKGROUND_SERVICE_URL}/ask`, { question });
       socket.emit('answer', response.data.answer);
     } catch (err) {
       socket.emit('answer', 'Error communicating with background service');

@@ -9,17 +9,20 @@ function App() {
   
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const sendQuestion = () => {
     if (!question.trim()) return;
     setMessages((prev) => [...prev, { type: 'user', content: question }]);
     socket.emit('question', question);
     setQuestion('');
+    setLoading(true);
   };
 
   useEffect(() => {
     socket.on('answer', (answer) => {
       setMessages((prev) => [...prev, { type: 'bot', content: answer }]);
+      setLoading(false);
     });
 
     return () => socket.off('answer');
@@ -39,6 +42,12 @@ function App() {
           )}
         </div>
       ))}
+
+      {loading && (
+        <div className='bot-msg'>
+           <span><strong>Bot:</strong>typing<span className='dots'>...</span></span>
+        </div>
+      )}
     </div>
 
     <div className="input-container">
