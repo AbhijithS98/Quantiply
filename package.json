@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently \"npm run start --prefix background-service\" \"npm run start --prefix express-app\" \"npm run dev --prefix ui-app\""
+    "start": "concurrently \"npm run dev --prefix background-service\" \"npm run dev --prefix express-app\" \"npm run dev --prefix ui-app\""
   },
   "keywords": [],
   "author": "",
