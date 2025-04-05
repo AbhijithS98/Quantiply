@@ -7,6 +7,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT;
+const API_KEY = process.env.NASA_API_KEY;
 
 app.use(cors());
 app.use(express.json());
@@ -21,11 +22,11 @@ app.post('/ask', async (req, res) => {
     if (question.toLowerCase() === 'ping') {
       return res.json({ answer: 'pong' });
     } else if (question.toLowerCase() === 'weather') {
-      const response = await axios.get('https://wttr.in/?format=3');
+      const response = await axios.get('https://wttr.in/Mumbai?format=3');
       return res.json({ answer: response.data });
     } else if (question.toLowerCase() === 'apod') {
       const response = await axios.get(
-        `https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY`
+        `https://api.nasa.gov/planetary/apod?api_key=${API_KEY}`
       );
       return res.json({ answer: response.data.url });
     } else {
