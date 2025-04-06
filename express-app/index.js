@@ -7,16 +7,27 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: '*' }
-});
-
 const PORT = process.env.PORT;
 const BACKGROUND_SERVICE_URL = process.env.BACKGROUND_SERVICE_URL;
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
-app.use(cors());
+const app = express();
+
+app.use(cors({
+  origin: FRONTEND_URL,
+  methods: ['GET', 'POST'],
+  credentials: true,
+}));
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: FRONTEND_URL,
+    methods: ['GET', 'POST'],
+    credentials: true,
+  }
+});
+
 app.get('/', (req, res) => {
   res.send('Socket server is up.');
 });
