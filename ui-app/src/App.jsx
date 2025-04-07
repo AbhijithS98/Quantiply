@@ -2,8 +2,13 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import './App.css';
 const EXPRESS_APP_URL = import.meta.env.VITE_EXPRESS_APP_URL;
+const isProd = import.meta.env.PROD;
 
-const socket = io(EXPRESS_APP_URL);
+const socket = io(EXPRESS_APP_URL,{
+  path: isProd ? '/express-app/socket.io' : '/socket.io',
+  withCredentials: true,
+  transports: ['websocket', 'polling'],
+});
 
 function App() {
   
