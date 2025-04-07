@@ -7,25 +7,25 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+const app = express();
+const server = http.createServer(app);
+
 const PORT = process.env.PORT;
 const BACKGROUND_SERVICE_URL = process.env.BACKGROUND_SERVICE_URL;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
-const app = express();
-
-app.use(cors({
+const corsOptions = {
   origin: FRONTEND_URL,
   methods: ['GET', 'POST'],
   credentials: true,
-}));
+}
+app.use(cors(corsOptions));
 
-const server = http.createServer(app);
+const isProduction = process.env.NODE_ENV === 'production';
+
 const io = new Server(server, {
-  cors: {
-    origin: FRONTEND_URL,
-    methods: ['GET', 'POST'],
-    credentials: true,
-  }
+  path: isProduction ? '/express-app/socket.io' : '/socket.io',
+  cors: corsOptions
 });
 
 app.get('/', (req, res) => {
