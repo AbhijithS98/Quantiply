@@ -1,48 +1,51 @@
-const express = require('express');
 const axios = require('axios');
-const cors = require('cors');
+const { createClient } = require('redis');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT;
 const API_KEY = process.env.NASA_API_KEY;
-
-app.use(cors());
-app.use(express.json());
+const REDIS_URL = process.env.REDIS_URL;
 
 
-app.post('/ask', async (req, res) => {
-  const { question } = req.body;
+// Redis clients
+const redisSub = createClient({ url: REDIS_URL });
+const redisPub = createClient({ url: REDIS_URL });
 
-  if (!question) return res.status(400).json({ answer: 'No question provided.' });
 
-  try {
-    if (question.toLowerCase() === 'ping') {
-      return res.json({ answer: 'pong' });
-    } else if (question.toLowerCase() === 'weather') {
-      const response = await axios.get('https://wttr.in/Mumbai?format=3');
-      return res.json({ answer: response.data });
-    } else if (question.toLowerCase() === 'apod') {
-      const response = await axios.get(
-        `https://api.nasa.gov/planetary/apod?api_key=${API_KEY}`
-      );
-      return res.json({ answer: response.data.url });
-    } else {
-      return res.json({ answer: 'Unknown question' });
+// Subscribe to incoming questions
+async function start() {
+  await redisPub.connect();
+  await redisSub.connect();
+
+  await redisSub.subscribe('questions', async (message) => {
+    const { socketId, question } = JSON.parse(message);
+
+    let answer = 'Unknown question';
+
+    try {
+      if (!question) {
+        answer = 'No question provided.';
+      } else if (question.toLowerCase() === 'ping') {
+        answer = 'pong';
+      } else if (question.toLowerCase() === 'weather') {
+        const response = await axios.get('https://wttr.in/Mumbai?format=3');
+        answer = response.data;
+      } else if (question.toLowerCase() === 'apod') {
+        const response = await axios.get(
+          `https://api.nasa.gov/planetary/apod?api_key=${API_KEY}`
+        );
+        answer = response.data.url;
+      }
+    } catch (error) {
+      console.error('Error processing question:', error.message);
+      answer = 'Something went wrong!';
     }
-  } catch (error) {
-    console.error('Error processing question:', error.message);
-    res.status(500).json({ answer: 'Something went wrong!' });
-  }
-});
 
-app.get('/', (req, res) => {
-  res.send('background-service server is up.');
-});
+    await redisPub.publish('answers', JSON.stringify({ socketId, answer }));
+  });
 
-app.listen(PORT, () => {
-  console.log(`Background service running at http://localhost:${PORT}`);
-});
+  console.log('Background service listening for Redis messages...');
+}
 
+start();
